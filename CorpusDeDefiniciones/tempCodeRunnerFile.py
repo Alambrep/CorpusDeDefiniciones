@@ -1,0 +1,1 @@
+errores = ["en", "de", "la", "por", "vía"]
