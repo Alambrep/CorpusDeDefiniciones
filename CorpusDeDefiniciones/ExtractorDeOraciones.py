@@ -1,6 +1,6 @@
 archivo_palabras = "contextos_definitorios.txt"
-archivo_texto = "texto_modificado.txt"
-archivo_salida = "oraciones_con_palabras.txt"
+archivo_texto = "TextoExtraido/texto_modificado.txt"
+archivo_salida = "TextoExtraido/oraciones_con_palabras.txt"
 
 def dividir_en_oraciones(texto):
     oraciones = []
