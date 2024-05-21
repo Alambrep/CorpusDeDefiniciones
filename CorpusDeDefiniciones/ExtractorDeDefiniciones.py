@@ -6,8 +6,8 @@ nlp = spacy.load("es_core_news_sm")
 
 archivo_palabras = "contextos_definitorios.txt"
 archivo_descartes = "listado_descartes_corpus.txt"
-archivo_texto = "oraciones_con_palabras.txt"
-archivo_csv = "definiciones.csv"
+archivo_texto = "TextoExtraido/oraciones_con_palabras.txt"
+archivo_csv = "TextoExtraido/definiciones.csv"
 
 # Leer palabras descartadas y convertirlas a minúsculas
 with open(archivo_descartes, "r", encoding="utf-8") as archivo_descartes:

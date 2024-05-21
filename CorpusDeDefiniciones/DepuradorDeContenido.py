@@ -107,8 +107,8 @@ def procesar_archivo(archivo_entrada, archivo_salida, palabras_clave, palabras_o
     except Exception as e:
         print(f"Ocurrió un error: {str(e)}")
 
-ruta_archivo_texto = "texto_extraido.txt"
-ruta_archivo_salida = "texto_modificado.txt"
+ruta_archivo_texto = "TextoExtraido/texto_extraido.txt"
+ruta_archivo_salida = "TextoExtraido/texto_modificado.txt"
 ruta_palabras_clave = "listado_palabras_clave.txt"
 ruta_palabras_omitidas = "listado_palabras_a_omitir.txt"
 ruta_caracteres_sin_valor = "listado_caracteres.txt"

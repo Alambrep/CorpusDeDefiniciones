@@ -2,14 +2,15 @@ import csv
 import sys
 
 # Ajustar el límite del tamaño de campo del CSV al tamaño máximo permitido del sistema operativo
-csv.field_size_limit(sys.maxsize)
+max_size = 2147483647  # El máximo valor para un entero largo en C
+csv.field_size_limit(max_size)
 
 # Lista de palabras consideradas errores
 errores = ["en", "de", "la", "por", "vía"]
 
 # Rutas de los archivos CSV de entrada y salida
-archivo_csv_entrada = "definiciones.csv"
-archivo_csv_salida = "definiciones_mejoradas.csv"
+archivo_csv_entrada = "TextoExtraido/definiciones.csv"
+archivo_csv_salida = "TextoExtraido/definiciones_mejoradas.csv"
 
 # Función para mejorar la redacción de una fila del CSV
 def mejorar_redaccion(entrada):
