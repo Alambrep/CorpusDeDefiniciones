@@ -1,0 +1,1124 @@
+Documentación de la clase Home.py
+
+Descripción
+
+Este script de Python utiliza la biblioteca Tkinter para crear una interfaz gráfica de usuario (GUI) que proporciona varias funcionalidades relacionadas con la manipulación de archivos de palabras clave, apéndices, corpus, caracteres especiales y palabras a omitir. También incluye opciones para cargar un PDF y buscar definiciones.
+
+Importaciones
+
+import tkinter as tk
+from AgregarPalabra import AgregarPalabra
+from AreaPDF import abrir_area_pdf
+from AreaDefinicion import abrir_area_definicion
+
+- `tkinter`: Biblioteca estándar de Python para la creación de interfaces gráficas de usuario.
+- `AgregarPalabra`: Módulo personalizado para agregar palabras a un archivo específico.
+- `abrir_area_pdf`: Función para abrir la sección de carga de PDF.
+- `abrir_area_definicion`: Función para abrir la sección de búsqueda de definiciones.
+
+Funciones
+
+`abrir_ventana_agregar_palabra(archivo, titulo)`
+
+def abrir_ventana_agregar_palabra(archivo, titulo):
+    AgregarPalabra(archivo, titulo)
+
+- Crea una nueva instancia de `AgregarPalabra` para abrir una ventana donde se puede agregar una palabra a un archivo específico.
+
+`Interfaz`
+
+La clase `Interfaz` se encarga de configurar y mostrar la ventana principal de la aplicación.
+
+class Interfaz:
+    # Crear la ventana principal
+    root = tk.Tk()
+    root.title("Proyecto")
+
+    # Definir el tamaño de la ventana
+    ancho = 400
+    alto = 300
+
+    # Obtener el tamaño de la pantalla
+    pantalla_ancho = root.winfo_screenwidth()
+    pantalla_alto = root.winfo_screenheight()
+
+    # Calcular la posición centrada
+    posicion_x = (pantalla_ancho // 2) - (ancho // 2)
+    posicion_y = (pantalla_alto // 2) - (alto // 2)
+
+    # Establecer la geometría de la ventana
+    root.geometry(f"{ancho}x{alto}+{posicion_x}+{posicion_y}")
+
+    # Barra de menú
+    barra_menu = tk.Menu(root)
+    root.config(menu=barra_menu)
+
+    # Menú "Opciones"
+    menu_opciones = tk.Menu(barra_menu, tearoff=0)
+    barra_menu.add_cascade(label="Opciones", menu=menu_opciones)
+
+    feedback = tk.Menu(barra_menu, tearoff=0)
+    feedback.add_command(label="Apéndices", command=lambda: abrir_ventana_agregar_palabra('Compendios/listado_apendices.txt', "Agregar palabra a Apéndices"))
+    feedback.add_command(label="Palabras clave", command=lambda: abrir_ventana_agregar_palabra('listado_palabras_clave.txt', "Agregar palabra a Palabras Clave"))
+    feedback.add_command(label="Corpus", command=lambda: abrir_ventana_agregar_palabra('corpus_descartes.txt', "Agregar palabra a Corpus"))
+    feedback.add_command(label="Palabras a omitir", command=lambda: abrir_ventana_agregar_palabra('listado_palabras_omitir.txt', "Agregar palabra a Palabras a Omitir"))
+    feedback.add_command(label="Caracteres especiales", command=lambda: abrir_ventana_agregar_palabra('listado_caracteres.txt', "Agregar palabra a Caracteres especiales"))
+    menu_opciones.add_cascade(label="Feedback", menu=feedback)
+
+    menu_opciones.add_command(label="Corregir compendios")
+    menu_opciones.add_command(label="Salir", command=root.destroy)
+
+    # Etiqueta de bienvenida
+    label_bienvenido = tk.Label(root, text="¡BIENVENIDO!", font=("Arial", 24))
+    label_bienvenido.pack(pady=30)
+
+    # Botón para cargar PDF
+    boton_cargar_pdf = tk.Button(root, text="CARGAR PDF", font=("Arial", 14), command=abrir_area_pdf)
+    boton_cargar_pdf.pack(pady=10)
+
+    # Botón para buscar
+    boton_buscar = tk.Button(root, text="BUSCAR", font=("Arial", 14), command=abrir_area_definicion)
+    boton_buscar.pack(pady=10)
+
+    # Ejecutar el bucle principal de la aplicación
+    root.mainloop()
+
+- Ventana Principal
+  - Se crea una instancia de `Tk` y se configura la ventana principal con un título y tamaño específico.
+  - La ventana se centra en la pantalla calculando su posición basada en el tamaño de la pantalla.
+
+- Barra de Menú
+  - Se crea una barra de menú con opciones específicas.
+  - El menú "Feedback" contiene comandos para agregar palabras a diferentes archivos (Apéndices, Palabras clave, Corpus, Palabras a omitir, Caracteres especiales).
+  - Opciones adicionales incluyen "Corregir compendios" y "Salir".
+
+- Elementos de la Interfaz
+  - Una etiqueta de bienvenida centrada.
+  - Un botón para cargar un PDF.
+  - Un botón para buscar definiciones.
+
+Ejecución Principal
+
+if __name__ == "__main__":
+    Interfaz()
+
+- Verifica si el script se está ejecutando como programa principal y, si es así, inicia la interfaz gráfica creando una instancia de la clase `Interfaz`.
+
+Documentación de la clase SeleccionarPDF.py
+
+Este script de Python utiliza la biblioteca Tkinter para crear una interfaz gráfica de usuario (GUI) que permite a los usuarios seleccionar un archivo PDF y ejecutar un script de automatización en él. También proporciona opciones para volver a la página de inicio o salir de la aplicación.
+
+Componentes
+
+Importaciones
+
+import tkinter as tk
+import subprocess
+from tkinter import filedialog, messagebox, Menu
+import sys
+
+- `tkinter`: Biblioteca estándar de Python para la creación de interfaces gráficas de usuario.
+- `subprocess`: Permite la ejecución de subprocesos nuevos y la interacción con ellos.
+- `filedialog`, `messagebox`, `Menu`: Módulos específicos de Tkinter para cuadros de diálogo de archivos, cuadros de mensaje y menús, respectivamente.
+- `sys`: Proporciona acceso a algunas variables usadas o mantenidas por el intérprete de Python.
+
+Variables Globales
+
+ruta_pdf = None
+ruta_salida = sys.argv[1]
+
+- `ruta_pdf`: Variable global para almacenar la ruta del archivo PDF seleccionado.
+- `ruta_salida`: Ruta de salida pasada como argumento de línea de comandos al script.
+
+`seleccionar_archivo_pdf()`
+
+def seleccionar_archivo_pdf():
+    global ruta_pdf
+    ruta_pdf = filedialog.askopenfilename(filetypes=[("Archivos PDF", "*.pdf")])
+    if ruta_pdf:
+        etiqueta_archivo.config(text=f"Archivo seleccionado: {ruta_pdf}")
+    else:
+        messagebox.showinfo("Información", "No se seleccionó ningún archivo.")
+
+- Abre un cuadro de diálogo para seleccionar un archivo PDF.
+- Actualiza la etiqueta de la interfaz con la ruta del archivo seleccionado o muestra un mensaje de información si no se selecciona ningún archivo.
+
+`iniciar_automatizador()`
+
+def iniciar_automatizador():
+    if ruta_pdf:
+        subprocess.run(["python3", "Automatizador.py", ruta_pdf, ruta_salida])
+        volver_a_home()
+    else:
+        messagebox.showwarning("Advertencia", "Primero debe seleccionar un archivo PDF.")
+
+- Inicia el script `Automatizador.py` con el archivo PDF seleccionado y la ruta de salida.
+- Muestra una advertencia si no se ha seleccionado ningún archivo.
+
+`salir()`
+
+def salir():
+    root.destroy
+
+- Cierra la aplicación.
+
+`volver_a_home()`
+
+def volver_a_home():
+    salir()
+    subprocess.run(["python3", "Home.py"])
+
+- Cierra la aplicación y ejecuta el script `Home.py`.
+
+`crear_interfaz()`
+
+def crear_interfaz():
+    global etiqueta_archivo
+    global root
+
+    root = tk.Tk()
+    root.title("PROYECTO CONSTRUCCION")
+    root.geometry("500x200")
+
+    root.update_idletasks()
+    ancho_ventana = root.winfo_width()
+    alto_ventana = root.winfo_height()
+    posicion_x = (root.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+    posicion_y = (root.winfo_screenheight() // 2) - (alto_ventana // 2)
+    root.geometry(f"+{posicion_x}+{posicion_y}")
+
+    frame = tk.Frame(root, padx=10, pady=10)
+    frame.pack(fill="both", expand=True)
+
+    barra_menu = tk.Menu(root)
+    root.config(menu=barra_menu)
+
+    menu_opciones = tk.Menu(barra_menu, tearoff=0)
+    barra_menu.add_cascade(label="Opciones", menu=menu_opciones)
+    menu_opciones.add_command(label="Home",command=volver_a_home)
+    menu_opciones.add_command(label="Salir", command=salir)
+
+    boton_seleccionar_pdf = tk.Button(frame, text="Seleccionar archivo PDF", command=seleccionar_archivo_pdf)
+    boton_seleccionar_pdf.pack(pady=10)
+
+    etiqueta_archivo = tk.Label(frame, text="No se ha seleccionado ningún archivo", wraplength=400)
+    etiqueta_archivo.pack(pady=10)
+
+    boton_comenzar = tk.Button(frame, text="Comenzar", command=iniciar_automatizador)
+    boton_comenzar.pack(pady=10)
+
+    root.mainloop()
+
+- Configura y crea la interfaz gráfica de usuario.
+- Centra la ventana en la pantalla.
+- Añade un menú con opciones para volver a la página de inicio y salir de la aplicación.
+- Añade botones para seleccionar un archivo PDF y para comenzar la automatización.
+- Ejecuta el bucle principal de la aplicación.
+
+Ejecución Principal
+
+if __name__ == "__main__":
+    print()
+    crear_interfaz()
+
+- Verifica si el script se está ejecutando como programa principal y, si es así, inicia la interfaz gráfica.
+
+Documentación de la clase AreaPDF.py
+
+Descripción
+
+Este script de Python utiliza la biblioteca Tkinter para crear una interfaz gráfica de usuario (GUI) que permite a los usuarios seleccionar un compendio de una lista y luego abrir una ventana para seleccionar un archivo PDF. El script utiliza un diccionario para mapear cada opción del compendio a una ruta específica.
+
+Componentes
+
+ Importaciones
+
+import tkinter as tk
+from tkinter import ttk
+import subprocess
+
+- `tkinter`: Biblioteca estándar de Python para la creación de interfaces gráficas de usuario.
+- `ttk`: Submódulo de Tkinter que proporciona widgets temáticos (como `Combobox`).
+- `subprocess`: Permite la ejecución de subprocesos nuevos y la interacción con ellos.
+
+ Variables Globales
+
+# Diccionario para mapear cada opción a una ruta
+rutas_compendios = {
+    "Salud": "Compendios/Salud",
+    "Ingenieria, manufactura y construcción": "Compendios/IngenieriaManufacturaConstruccion",
+    "Derecho": "Compendios/Derecho",
+    "Ciencias sociales" : "Compendios/CienciasSociales",
+    "Artes y humanidades": "Compendios/ArtesHumanidades",
+    "Agronomia y veterinaria": "Compendios/AgronomiaVeterinaria",
+    "Ciencias exactas y de la computacion": "Compendios/CienciasExactasComputacion"
+}
+ruta_salida = None
+
+- `rutas_compendios`: Diccionario que mapea nombres de compendios a sus respectivas rutas.
+- `ruta_salida`: Variable global para almacenar la ruta de salida seleccionada.
+
+ Funciones
+
+`abrir_area_pdf()`
+
+def abrir_area_pdf():
+    def seleccionar_ruta_pdf():
+        global ruta_salida
+        opcion = combo.get()
+        if opcion in rutas_compendios:
+            ruta_salida = rutas_compendios[opcion]
+            print(f"Ruta seleccionada para salida: {ruta_salida}")  # Solo para verificación
+            area_pdf.destroy()  # Cerrar la ventana actual
+            abrir_seleccionar_pdf()
+
+- Crea una ventana para que el usuario seleccione un compendio.
+- Una vez seleccionada una opción válida, se guarda la ruta de salida correspondiente y se cierra la ventana actual.
+- Llama a `abrir_seleccionar_pdf()` para abrir la ventana de selección de PDF.
+
+    area_pdf = tk.Toplevel()
+    area_pdf.title("Selección de Compendio")
+    area_pdf.geometry("500x200")
+    
+    # Centrar la ventana en la pantalla
+    area_pdf.update_idletasks()
+    ancho_ventana = area_pdf.winfo_width()
+    alto_ventana = area_pdf.winfo_height()
+    posicion_x = (area_pdf.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+    posicion_y = (area_pdf.winfo_screenheight() // 2) - (alto_ventana // 2)
+    area_pdf.geometry(f"+{posicion_x}+{posicion_y}")
+    
+    # Etiqueta
+    label = tk.Label(area_pdf, text="Seleccione el compendio deseado:", font=("Arial", 12))
+    label.pack(pady=20)
+    
+    # Crear un combobox
+    combo = ttk.Combobox(area_pdf, values=["Seleccione una opción"] + list(rutas_compendios.keys()), state="readonly")
+    combo.pack(pady=10)
+    
+    # Establecer valor predeterminado
+    combo.current(0)
+
+    # Botón para confirmar la selección
+    boton_confirmar = tk.Button(area_pdf, text="Confirmar", command=seleccionar_ruta_pdf)
+    boton_confirmar.pack(pady=10)
+
+    area_pdf.mainloop()
+
+
+- Configura y muestra la ventana para la selección del compendio.
+- Centra la ventana en la pantalla.
+- Añade una etiqueta de texto.
+- Crea un `Combobox` para la selección del compendio con opciones predefinidas.
+- Añade un botón para confirmar la selección.
+
+# `abrir_seleccionar_pdf()`
+
+def abrir_seleccionar_pdf():
+    subprocess.run(["python3", "SeleccionarPDF.py", ruta_salida])
+
+
+- Ejecuta el script `SeleccionarPDF.py` con la ruta de salida seleccionada como argumento.
+
+ Ejecución Principal
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.withdraw()  # Ocultar la ventana principal
+    abrir_area_pdf()
+
+
+- Verifica si el script se está ejecutando como programa principal.
+- Oculta la ventana principal utilizando `withdraw()`.
+- Llama a `abrir_area_pdf()` para iniciar el proceso de selección del compendio.
+
+Documentación de la clase AreaDefinicion.py
+Descripción
+
+Este script de Python utiliza la biblioteca Tkinter para crear una interfaz gráfica de usuario (GUI) que permite a los usuarios seleccionar un compendio de una lista y luego abrir una ventana para buscar definiciones en ese compendio. El script utiliza un diccionario para mapear cada opción del compendio a una ruta específica.
+
+Componentes
+
+#Importaciones
+
+
+import tkinter as tk
+from tkinter import ttk
+import subprocess
+
+- `tkinter`: Biblioteca estándar de Python para la creación de interfaces gráficas de usuario.
+- `ttk`: Submódulo de Tkinter que proporciona widgets temáticos (como `Combobox`).
+- `subprocess`: Permite la ejecución de subprocesos nuevos y la interacción con ellos.
+
+#Variables Globales
+
+
+# Diccionario para mapear cada opción a una ruta
+rutas_compendios = {
+    "Salud": "Compendios/Salud",
+    "Ingenieria, manufactura y construcción": "Compendios/IngenieriaManufacturaConstruccion",
+    "Derecho": "Compendios/Derecho",
+    "Ciencias sociales" : "Compendios/CienciasSociales",
+    "Artes y humanidades": "Compendios/ArtesHumanidades",
+    "Agronomia y veterinaria": "Compendios/AgronomiaVeterinaria",
+    "Ciencias exactas y de la computacion": "Compendios/CienciasExactasComputacion"
+}
+ruta_salida = None
+
+- `rutas_compendios`: Diccionario que mapea nombres de compendios a sus respectivas rutas.
+- `ruta_salida`: Variable global para almacenar la ruta de salida seleccionada.
+
+#Funciones
+
+abrir_area_definicion()`
+
+
+def abrir_area_definicion():
+    def seleccionar_ruta_definicion():
+        global ruta_salida
+        opcion = combo.get()
+        if opcion in rutas_compendios:
+            ruta_salida = rutas_compendios[opcion]
+            print(f"Ruta seleccionada para salida: {ruta_salida}")  # Solo para verificación
+            area_pdf.destroy()  # Cerrar la ventana actual
+            abrir_buscador_de_definicion()
+
+- Crea una ventana para que el usuario seleccione un compendio.
+- Una vez seleccionada una opción válida, se guarda la ruta de salida correspondiente y se cierra la ventana actual.
+- Llama a `abrir_buscador_de_definicion()` para abrir la ventana del buscador de definiciones.
+
+
+    area_pdf = tk.Toplevel()
+    area_pdf.title("Selección de Compendio")
+    area_pdf.geometry("500x200")
+
+    # Centrar la ventana en la pantalla
+    area_pdf.update_idletasks()
+    ancho_ventana = area_pdf.winfo_width()
+    alto_ventana = area_pdf.winfo_height()
+    posicion_x = (area_pdf.winfo_screenwidth() // 2) - (ancho_ventana // 2)
+    posicion_y = (area_pdf.winfo_screenheight() // 2) - (alto_ventana // 2)
+    area_pdf.geometry(f"+{posicion_x}+{posicion_y}")
+
+    # Etiqueta
+    label = tk.Label(area_pdf, text="Seleccione el compendio deseado:", font=("Arial", 12))
+    label.pack(pady=20)
+
+    # Crear un combobox
+    combo = ttk.Combobox(area_pdf, values=["Seleccione una opción"] + list(rutas_compendios.keys()), state="readonly")
+    combo.pack(pady=10)
+
+    # Establecer valor predeterminado
+    combo.current(0)
+
+    # Botón para confirmar la selección
+    boton_confirmar = tk.Button(area_pdf, text="Confirmar", command=seleccionar_ruta_definicion)
+    boton_confirmar.pack(pady=10)
+
+    area_pdf.mainloop()
+
+- Configura y muestra la ventana para la selección del compendio.
+- Centra la ventana en la pantalla.
+- Añade una etiqueta de texto.
+- Crea un `Combobox` para la selección del compendio con opciones predefinidas.
+- Añade un botón para confirmar la selección.
+
+abrir_buscador_de_definicion()`
+
+
+def abrir_buscador_de_definicion():
+    subprocess.run(["python3", "BuscadorDeDefinicion.py", ruta_salida])
+
+- Ejecuta el script `BuscadorDeDefinicion.py` con la ruta de salida seleccionada como argumento.
+
+#Ejecución Principal
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.withdraw()  # Ocultar la ventana principal
+    abrir_area_definicion()
+
+- Verifica si el script se está ejecutando como programa principal.
+- Oculta la ventana principal utilizando `withdraw()`.
+- Llama a `abrir_area_definicion()` para iniciar el proceso de selección del compendio.
+
+Documentación de la clase Automatizador.py
+
+Descripción
+
+Este script de Python es un automatizador que procesa un archivo PDF realizando varias etapas de extracción, depuración, y corrección de contenido. Utiliza varios scripts auxiliares (`ExtractorDePDF.py`, `DepuradorDeContenido.py`, `ExtractorDeOraciones.py`, `ExtractorDeDefiniciones.py`, `CorrectorDeRedaccion.py`) para realizar cada una de las etapas de procesamiento. Al final, genera un archivo CSV con las definiciones mejoradas y lo mueve a la ruta de salida especificada.
+
+Componentes
+
+Importaciones
+
+import sys
+import os
+import subprocess
+import shutil
+from tkinter import messagebox
+
+- `sys`: Proporciona acceso a algunas variables utilizadas o mantenidas por el intérprete de Python.
+- `os`: Proporciona una forma de usar funcionalidades dependientes del sistema operativo.
+- `subprocess`: Permite la ejecución de subprocesos nuevos y la interacción con ellos.
+- `shutil`: Ofrece una serie de operaciones de alto nivel en archivos y colecciones de archivos.
+- `tkinter.messagebox`: Proporciona cuadros de mensaje para alertas, información y otros mensajes emergentes.
+
+Clase `Main`
+
+Constructor `__init__`
+
+class Main:
+    def __init__(self, ruta_pdf, ruta_salida):
+        self.ruta_pdf = ruta_pdf
+        self.ruta_archivo_csv_salida = "TextoExtraido/definiciones_mejoradas.csv"
+        self.ruta_salida = ruta_salida
+
+- `ruta_pdf`: Ruta del archivo PDF a procesar.
+- `ruta_archivo_csv_salida`: Ruta del archivo CSV que se generará.
+- `ruta_salida`: Ruta del directorio donde se moverá el archivo CSV generado.
+
+`ejecutar`
+
+    def ejecutar(self):
+        self.print_comprobar()
+        self.extraer_pdf_a_texto()
+        self.depurar_contenido()
+        self.extraer_oraciones_con_palabras()
+        self.extraer_definiciones()
+        self.corregir_redaccion()
+        self.limpiar_archivos()
+
+Este método ejecuta todas las etapas del procesamiento en secuencia:
+
+1. `print_comprobar`: Imprime las rutas seleccionadas para verificación.
+2. `extraer_pdf_a_texto`: Ejecuta el script para extraer texto del PDF.
+3. `depurar_contenido`: Ejecuta el script para depurar el contenido extraído.
+4. `extraer_oraciones_con_palabras`: Ejecuta el script para extraer oraciones con palabras clave.
+5. `extraer_definiciones`: Ejecuta el script para extraer definiciones.
+6. `corregir_redaccion`: Ejecuta el script para corregir la redacción.
+7. `limpiar_archivos`: Mueve el archivo CSV generado a la ruta de salida y limpia los archivos temporales.
+
+`print_comprobar`
+
+    def print_comprobar(self):
+        print(f"Ruta seleccionada para pdf en automatizador: {self.ruta_pdf}")
+        print(f"Ruta seleccionada para salida en automatizador: {self.ruta_salida}")
+
+Imprime las rutas seleccionadas para el PDF y la salida.
+
+`extraer_pdf_a_texto`
+
+    def extraer_pdf_a_texto(self):
+        print(f"Ejecutando ExtractorDePDF.py para {self.ruta_pdf}...")
+        resultado = subprocess.run(["python3", "ExtractorDePDF.py", self.ruta_pdf])
+        if resultado.returncode != 0:
+            print("Error al ejecutar ExtractorDePDF.py")
+            sys.exit(1)
+        print("ExtractorDePDF.py ejecutado exitosamente.")
+
+Ejecuta el script `ExtractorDePDF.py` para extraer texto del archivo PDF. Si hay un error, se imprime un mensaje y se termina el programa.
+
+`depurar_contenido`
+
+    def depurar_contenido(self):
+        print("Ejecutando DepuradorDeContenido.py...")
+        resultado = subprocess.run(["python3", "DepuradorDeContenido.py"])
+        if resultado.returncode != 0:
+            print("Error al ejecutar DepuradorDeContenido.py")
+            sys.exit(1)
+        print("DepuradorDeContenido.py ejecutado exitosamente.")
+
+Ejecuta el script `DepuradorDeContenido.py` para depurar el contenido extraído. Si hay un error, se imprime un mensaje y se termina el programa.
+
+`extraer_oraciones_con_palabras`
+
+    def extraer_oraciones_con_palabras(self):
+        print("Ejecutando ExtractorDeOraciones.py...")
+        resultado = subprocess.run(["python3", "ExtractorDeOraciones.py"])
+        if resultado.returncode != 0:
+            print("Error al ejecutar ExtractorDeOraciones.py")
+            sys.exit(1)
+        print("ExtractorDeOraciones.py ejecutado exitosamente.")
+
+Ejecuta el script `ExtractorDeOraciones.py` para extraer oraciones con palabras clave. Si hay un error, se imprime un mensaje y se termina el programa.
+
+`extraer_definiciones`
+
+    def extraer_definiciones(self):
+        print("Ejecutando ExtractorDeDefiniciones.py...")
+        resultado = subprocess.run(["python3", "ExtractorDeDefiniciones.py"])
+        if resultado.returncode != 0:
+            print("Error al ejecutar ExtractorDeDefiniciones.py")
+            sys.exit(1)
+        print("ExtractorDeDefiniciones.py ejecutado exitosamente.")
+
+Ejecuta el script `ExtractorDeDefiniciones.py` para extraer definiciones. Si hay un error, se imprime un mensaje y se termina el programa.
+
+`corregir_redaccion`
+
+    def corregir_redaccion(self):
+        print("Ejecutando CorrectorDeRedaccion.py...")
+        resultado = subprocess.run(["python3", "CorrectorDeRedaccion.py"])
+        if resultado.returncode != 0:
+            print("Error al ejecutar CorrectorDeRedaccion.py")
+            sys.exit(1)
+        print("CorrectorDeRedaccion.py ejecutado exitosamente.")
+
+Ejecuta el script `CorrectorDeRedaccion.py` para corregir la redacción del contenido. Si hay un error, se imprime un mensaje y se termina el programa.
+
+`limpiar_archivos`
+
+    def limpiar_archivos(self):
+        try:
+            # Mover el archivo "definiciones_mejoradas.csv" a la ruta seleccionada
+            shutil.move(self.ruta_archivo_csv_salida, os.path.join(self.ruta_salida, "definiciones_mejoradas.csv"))
+            print(f"Archivo movido a la carpeta '{self.ruta_salida}'")
+            messagebox.showinfo("Información", "Se ha generado el archivo csv")
+
+            # Eliminar archivos restantes en "TextoExtraido"
+            for archivo in os.listdir("TextoExtraido"):
+                ruta_archivo = os.path.join("TextoExtraido", archivo)
+                os.remove(ruta_archivo)
+                print(f"Archivo eliminado: {ruta_archivo}")
+        except Exception as e:
+            print(f"Error al limpiar archivos: {str(e)}")
+
+Mueve el archivo CSV generado a la ruta de salida especificada y limpia los archivos restantes en el directorio `TextoExtraido`.
+
+ Ejecución Principal
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:
+        print("Uso: python Automatizador.py <ruta_pdf> <ruta_salida>")
+        sys.exit(1)
+    
+    ruta_pdf = sys.argv[1]
+    ruta_salida = sys.argv[2]
+    main = Main(ruta_pdf, ruta_salida)
+    main.ejecutar()
+
+- Verifica si el script se está ejecutando como programa principal.
+- Comprueba que se han pasado exactamente dos argumentos (la ruta del PDF y la ruta de salida).
+- Instancia la clase `Main` con las rutas proporcionadas.
+- Llama al método `ejecutar` para iniciar el procesamiento.
+
+Documentación de la clase ExtractorDePDF.py
+
+Descripción
+
+Este script de Python extrae texto de un archivo PDF, filtra elementos no deseados como números de página, pies de página y títulos, y guarda el texto resultante en un archivo de texto. El script utiliza la biblioteca `PyMuPDF` (importada como `fitz`) para trabajar con archivos PDF.
+
+Componentes
+
+Importaciones
+
+import fitz
+import os
+import re
+from tkinter import messagebox
+import sys
+
+- `fitz`: Biblioteca PyMuPDF para manipulación de archivos PDF.
+- `os`: Proporciona una forma de usar funcionalidades dependientes del sistema operativo.
+- `re`: Biblioteca para trabajar con expresiones regulares.
+- `tkinter.messagebox`: Proporciona cuadros de mensaje para alertas y otros mensajes emergentes.
+- `sys`: Proporciona acceso a algunas variables utilizadas o mantenidas por el intérprete de Pytho`convertir_pdf_a_texto`
+
+def convertir_pdf_a_texto(ruta_pdf):
+    try:
+        print(f"Iniciando conversión del PDF: {ruta_pdf}")
+
+        # Verificar si el archivo PDF existe
+        if not os.path.isfile(ruta_pdf):
+            print(f"El archivo PDF no existe: {ruta_pdf}")
+            return
+
+        # Directorio de salida para el archivo de texto
+        directorio_salida_texto = os.path.join(os.path.dirname(__file__), "TextoExtraido")
+
+        # Crear la carpeta de salida si no existe
+        if not os.path.exists(directorio_salida_texto):
+            os.makedirs(directorio_salida_texto)
+
+        print(f"Directorio de salida creado: {directorio_salida_texto}")
+
+        # Patrón para reconocer números de página
+        patron_numeros_pagina = re.compile(r'\d+$')
+        # Patrón para reconocer pies de página
+        patron_pies_pagina = re.compile(r'^(?![A-ZÁÉÍÓÚÜ]+[a-záéíóúü]*\d+$)[A-Z]\s*\d+$')
+
+para convertir números romanos a números arábigos
+        def romano_a_arabigo(numero_romano):
+            valores_romanos_a_arabigos = {
+                'I': 1,
+                'V': 5,
+                'X': 10,
+                'L': 50,
+                'C': 100,
+                'D': 500,
+                'M': 1000
+            }
+            numero_arabigo = 0
+            prev_valor = 0
+            for letra in numero_romano[::-1]:
+                valor = valores_romanos_a_arabigos[letra]
+                if valor < prev_valor:
+                    numero_arabigo -= valor
+                else:
+                    numero_arabigo += valor
+                prev_valor = valor
+            return numero_arabigo
+
+para extraer texto de una página y filtrar elementos no deseados
+        def extraer_texto_pagina(pagina):
+            texto_pagina = pagina.get_text()
+            lineas_texto = texto_pagina.split('\n')
+            lineas_filtradas = []
+
+            for linea in lineas_texto:
+                # Filtrar números de página y pies de página
+                if not patron_numeros_pagina.match(linea) and not patron_pies_pagina.match(linea):
+                    # Convertir números romanos a números arábigos
+                    numeros_romanos = re.findall(r'\b[IVXLCDM]+\b', linea)
+                    for numero_romano in numeros_romanos:
+                        numero_arabigo = romano_a_arabigo(numero_romano)
+                        linea = linea.replace(numero_romano, str(numero_arabigo))
+
+                    # Eliminar palabras en mayúsculas (suponiendo que son títulos)
+                    palabras_mayusculas = re.findall(r'\b[A-ZÁÉÍÓÚÜ]{3,}\b', linea)
+                    for palabra in palabras_mayusculas:
+                        linea = linea.replace(palabra, '')
+
+                    lineas_filtradas.append(linea)
+            texto_filtrado = '\n'.join(lineas_filtradas)
+
+            return texto_filtrado
+
+        # Abrir el documento PDF
+        print("Intentando abrir el documento PDF...")
+        pdf_documento = fitz.open(ruta_pdf)
+        print(f"Documento PDF abierto: {ruta_pdf}")
+
+        texto_final = ''
+        # Iterar sobre cada página del PDF
+        for numero_pagina in range(pdf_documento.page_count):
+            print(f"Procesando página: {numero_pagina + 1}/{pdf_documento.page_count}")
+            pagina_actual = pdf_documento[numero_pagina]
+            # Extraer y filtrar el texto de la página
+            texto_pagina_actual = extraer_texto_pagina(pagina_actual)
+            texto_final += texto_pagina_actual + '\n'
+
+        # Ruta para el archivo de texto de salida
+        ruta_archivo_texto_final = os.path.join(directorio_salida_texto, "texto_extraido.txt")
+
+        # Escribir el texto filtrado en un archivo de texto
+        with open(ruta_archivo_texto_final, 'w', encoding='utf-8') as archivo_texto_final:
+            archivo_texto_final.write(texto_final)
+
+        # Cerrar el documento PDF
+        pdf_documento.close()
+
+        print('Texto extraído y guardado en:', ruta_archivo_texto_final)
+    
+    except Exception as e:
+        messagebox.showerror("Error", f"Se produjo un error: {str(e)}")
+        print(f"Error: {str(e)}")
+
+Proceso de Conversión
+
+1. Verificación del archivo PDF:
+   - Comprueba si el archivo PDF existe. Si no existe, imprime un mensaje y termina la ejecución.
+
+2. Creación del Directorio de Salida:
+   - Crea un directorio llamado `TextoExtraido` en el directorio actual del script si no existe.
+
+3. Definición de Patrones y Funciones Auxiliares:
+   - `patron_numeros_pagina`: Patrón para reconocer números de página.
+   - `patron_pies_pagina`: Patrón para reconocer pies de página.
+   - `romano_a_arabigo`: Convierte números romanos a números arábigos.
+   - `extraer_texto_pagina`: Extrae texto de una página, filtra números de página, pies de página, convierte números romanos a arábigos y elimina palabras en mayúsculas.
+
+4. Apertura y Procesamiento del PDF:
+   - Abre el documento PDF.
+   - Itera sobre cada página, extrae y filtra el texto.
+
+5. Escritura del Texto en un Archivo:
+   - Guarda el texto filtrado en un archivo de texto llamado `texto_extraido.txt` en el directorio `TextoExtraido`.
+
+Ejecución Principal
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Uso: python ExtractorDePDF.py <ruta_pdf>")
+        sys.exit(1)
+    
+    ruta_pdf = sys.argv[1]
+    convertir_pdf_a_texto(ruta_pdf)
+
+- Verifica si el script se está ejecutando como programa principal.
+- Comprueba que se ha pasado exactamente un argumento (la ruta del PDF).
+- Llama a`convertir_pdf_a_texto` con la ruta proporcionada.
+
+Documentación de la clase DepuradorDeContenido.py
+
+`cargar_palabras_desde_archivo`
+
+def cargar_palabras_desde_archivo(ruta_archivo):
+    """
+    Carga palabras desde un archivo de texto y las devuelve como una lista.
+
+    Args:
+        ruta_archivo (str): Ruta del archivo de texto.
+
+    Returns:
+        list: Lista de palabras cargadas desde el archivo.
+    """
+    try:
+        with open(ruta_archivo, 'r', encoding='utf-8') as archivo:
+            palabras = [line.strip('" \n') for line in archivo]
+        return palabras
+    except FileNotFoundError:
+        print(f"No se pudo encontrar el archivo en la ruta: {ruta_archivo}")
+        return []
+
+- Descripción: Carga palabras desde un archivo de texto especificado y las devuelve como una lista.
+- Argumentos:
+  - `ruta_archivo` (str): Ruta del archivo de texto del cual cargar las palabras.
+- Retorna:
+  - `list`: Lista de palabras cargadas desde el archivo.
+
+`generar_patron_omitidas`
+
+def generar_patron_omitidas(palabras):
+    """
+    Genera un patrón para omitir palabras específicas en un texto.
+
+    Args:
+        palabras (list): Lista de palabras a omitir.
+
+    Returns:
+        re.Pattern: Patrón compilado para omitir las palabras.
+    """
+    # Escapar los caracteres especiales en las palabras antes de unir el patrón
+    palabras_escaped = [re.escape(palabra) for palabra in palabras]
+    patron = r'\b(?:' + '|'.join(palabras_escaped) + r')\b'
+    return re.compile(patron, re.IGNORECASE | re.UNICODE)
+
+- Descripción: Genera un patrón de expresión regular para omitir palabras específicas en un texto.
+- Argumentos:
+  - `palabras` (list): Lista de palabras que deben ser omitidas.
+- Retorna:
+  - `re.Pattern`: Patrón compilado para omitir las palabras especificadas.
+
+`omitir_numeros`
+
+def omitir_numeros(texto):
+    """
+    Omitir números en el texto, excepto aquellos seguidos de "cm".
+
+    Args:
+        texto (str): Texto de entrada.
+
+    Returns:
+        str: Texto con los números omitidos, excepto los seguidos de "cm".
+    """
+    def reemplazar(match):
+        numero = match.group(0)
+        if not numero.endswith(" cm"):
+            return ""
+        return numero
+
+    return re.sub(r'\d+-\d+(?!\s*cm)', reemplazar, texto)
+
+- Descripción: Elimina números del texto, excepto aquellos seguidos por "cm".
+- Argumentos:
+  - `texto` (str): Texto de entrada del cual se deben omitir los números.
+- Retorna:
+  - `str`: Texto modificado con los números omitidos según el criterio especificado.
+
+`limpiar_texto`
+
+def limpiar_texto(contenido, palabras_clave, palabras_omitidas, caracteres_sin_valor, apendices):
+    """
+    Limpia el texto eliminando párrafos con palabras clave, palabras omitidas, caracteres sin valor,
+    apéndices y números no seguidos de "cm".
+
+    Args:
+        contenido (str): Texto de entrada.
+        palabras_clave (list): Lista de palabras clave.
+        palabras_omitidas (list): Lista de palabras a omitir.
+        caracteres_sin_valor (list): Lista de caracteres sin valor.
+        apendices (list): Lista de apéndices.
+
+    Returns:
+        str: Texto limpio.
+    """
+    contenido_modificado = []
+    for parrafo in contenido.split('\n\n'):
+        if not any(palabra_clave in parrafo.lower() for palabra_clave in palabras_clave):
+            contenido_modificado.append(parrafo)
+
+    contenido = '\n\n'.join(contenido_modificado)
+    patron_omitidas = generar_patron_omitidas(palabras_omitidas)
+    contenido = re.sub(patron_omitidas, '', contenido)
+    for caracter in caracteres_sin_valor:
+        contenido = contenido.replace(caracter, '')
+    for apendice in apendices:
+        contenido = re.sub(r'\([^)]*' + re.escape(apendice) + r'[^)]*\)', '', contenido)
+    contenido = omitir_numeros(contenido)
+    return contenido
+
+- Descripción: Limpia el texto eliminando párrafos con palabras clave, palabras omitidas, caracteres sin valor, apéndices y números no seguidos de "cm".
+- Argumentos:
+  - `contenido` (str): Texto de entrada que se debe limpiar.
+  - `palabras_clave` (list): Lista de palabras clave que determinan si se omite un párrafo.
+  - `palabras_omitidas` (list): Lista de palabras que se deben omitir del texto.
+  - `caracteres_sin_valor` (list): Lista de caracteres que se deben eliminar del texto.
+  - `apendices` (list): Lista de apéndices que se deben eliminar del texto.
+- Retorna:
+  - `str`: Texto limpio según los criterios especificado`procesar_archivo`
+
+def procesar_archivo(archivo_entrada, archivo_salida, palabras_clave, palabras_omitidas, caracteres_sin_valor, apendices):
+    """
+    Procesa un archivo de texto, aplica limpieza y escribe el resultado en otro archivo.
+
+    Args:
+        archivo_entrada (str): Ruta del archivo de entrada.
+        archivo_salida (str): Ruta del archivo de salida.
+        palabras_clave (list): Lista de palabras clave.
+        palabras_omitidas (list): Lista de palabras a omitir.
+        caracteres_sin_valor (list): Lista de caracteres sin valor.
+        apendices (list): Lista de apéndices.
+    """
+    try:
+        with open(archivo_entrada, 'r', encoding='utf-8') as archivo_entrada:
+            contenido = archivo_entrada.read()
+        contenido_modificado = limpiar_texto(contenido, palabras_clave, palabras_omitidas, caracteres_sin_valor, apendices)
+        with open(archivo_salida, 'w', encoding='utf-8') as archivo_salida:
+            archivo_salida.write(contenido_modificado)
+        print("Archivo copiado y palabras/caracteres sin valor/apéndices/numeros/párrafos con palabras clave omitidos exitosamente.")
+
+    except FileNotFoundError:
+        print(f"No se pudo encontrar el archivo en la ruta: {archivo_entrada}")
+
+    except Exception as e:
+        print(f"Ocurrió un error: {str(e)}")
+
+- Descripción: Procesa un archivo de texto, aplica limpieza según los criterios especificados y guarda el resultado en otro archivo.
+- Argumentos:
+  - `archivo_entrada` (str): Ruta del archivo de entrada que se debe procesar.
+  - `archivo_salida` (str): Ruta del archivo de salida donde se debe guardar el texto procesado.
+  - `palabras_clave` (list): Lista de palabras clave que determinan si se omite un párrafo.
+  - `palabras_omitidas` (list): Lista de palabras que se deben omitir del texto.
+  - `caracteres_sin_valor` (list): Lista de caracteres que se deben eliminar del texto.
+  - `apendices` (list): Lista de apéndices que se deben eliminar del texto.
+
+Uso Principal del Código
+
+ruta_archivo_texto = "TextoExtraido/texto_extraido.txt"
+ruta_archivo_salida = "TextoExtraido/texto_modificado.txt"
+ruta_palabras_clave = "listado_palabras_clave.txt"
+ruta_palabras_omitidas = "listado_palabras_a_omitir.txt"
+ruta_caracteres_sin_valor = "listado_caracteres.txt"
+ruta_apendices = "listado_apendices.txt"
+
+palabras_clave = cargar_palabras_desde_archivo(ruta_palabras_clave)
+palabras_omitidas = cargar_palabras_desde_archivo(ruta_palabras_omitidas)
+caracteres_sin_valor = cargar_palabras_desde_archivo(ruta_caracteres_sin_valor)
+apendices = cargar_palabras_desde_archivo(ruta_apendices)
+
+procesar_archivo(ruta_archivo_texto, ruta_archivo_salida, palabras_clave, palabras_omitidas, caracteres_sin_valor, apendices)
+
+- Descripción: Ejemplo de uso del código principal, donde se especifican las rutas de archivos y se procesa el archivo de texto `texto_extraido.txt`, aplicando las funciones de limpieza y guardando el resultado en `texto_modificado.txt`.
+
+Documentación de la clase ExtractorDeOraciones.py
+
+Este código busca oraciones que contengan palabras clave de un archivo en un texto modificado y las guarda en otro archivo.
+
+archivo_palabras = "contextos_definitorios.txt"
+archivo_texto = "TextoExtraido/texto_modificado.txt"
+archivo_salida = "TextoExtraido/oraciones_con_palabras.txt"
+
+def dividir_en_oraciones(texto):
+    oraciones = []
+    inicio = 0
+    for i, char in enumerate(texto):
+        if char in ['.', '!', '?', ':']:
+            oracion = texto[inicio:i+1]
+            oraciones.append(oracion.strip())
+            inicio = i+1
+    return oraciones
+
+with open(archivo_palabras, "r", encoding="utf-8") as archivo_palabras:
+    palabras = archivo_palabras.read().splitlines()
+
+with open(archivo_texto, "r", encoding="utf-8") as archivo_texto:
+    texto = archivo_texto.read()
+
+texto = texto.replace('\n', ' ')
+
+oraciones = dividir_en_oraciones(texto)
+
+oraciones_con_palabras = []
+
+for palabra in palabras:
+    for oracion in oraciones:
+        if palabra in oracion:
+            oraciones_con_palabras.append(oracion)
+
+with open(archivo_salida, "w", encoding="utf-8") as archivo_salida:
+    for i, oracion in enumerate(oraciones_con_palabras):
+        if oracion.strip():  
+            archivo_salida.write(oracion.strip() + ".\n" if i < len(oraciones_con_palabras) - 1 else oracion.strip() + " ")
+
+`dividir_en_oraciones`: Divide un texto en oraciones utilizando caracteres de puntuación como delimitadores.
+
+Proceso:
+1. Cargar Palabras Clave: Lee las palabras clave desde `contextos_definitorios.txt`.
+2. Cargar Texto: Lee el texto modificado desde `TextoExtraido/texto_modificado.txt`.
+3. Dividir en Oraciones: Utiliza la función `dividir_en_oraciones` para dividir el texto en oraciones.
+4. Buscar Oraciones con Palabras Clave: Itera sobre las palabras clave y las oraciones para encontrar oraciones que contengan al menos una palabra clave.
+5. Escribir Oraciones: Guarda las oraciones encontradas en `TextoExtraido/oraciones_con_palabras.txt`.
+
+Documenración de la clase CorrectorDeRedacción.py
+
+Este código mejora la redacción de las definiciones en un archivo CSV de entrada y guarda las filas mejoradas en otro archivo CSV.
+
+import csv
+import sys
+
+# Ajustar el límite del tamaño de campo del CSV al tamaño máximo permitido del sistema operativo
+csv.field_size_limit(sys.maxsize)
+
+# Lista de palabras consideradas errores
+errores = ["en", "de", "la", "por", "vía"]
+
+# Rutas de los archivos CSV de entrada y salida
+archivo_csv_entrada = "TextoExtraido/definiciones.csv"
+archivo_csv_salida = "TextoExtraido/definiciones_mejoradas.csv"
+
+# Función para mejorar la redacción de una fila del CSV
+def mejorar_redaccion(entrada):
+    concepto, definicion = entrada
+    # Separar las palabras del concepto
+    palabras_concepto = concepto.strip().split()
+    # Eliminar la última palabra si está en la lista de errores
+    if palabras_concepto[-1].lower() in errores:
+        concepto = ' '.join(palabras_concepto[:-1])
+    # Capitalizar el concepto y añadir un espacio al final
+    concepto = concepto.capitalize() + " "
+    # Separar las palabras de la definición
+    palabras_definicion = definicion.strip().split()
+    # Eliminar la primera letra de la definición si es una sola letra (y no es un número)
+    if len(palabras_definicion) > 1 and len(palabras_definicion[0]) == 1 and not palabras_definicion[0].isnumeric():
+        definicion = ' '.join(palabras_definicion[1:])
+    # Formatear la definición con comillas dobles al inicio y al final
+    definicion = f'"{definicion.strip()}"'
+    return concepto, definicion
+
+# Función principal del programa
+def main():
+    filas_mejoradas = []
+    # Abrir el archivo CSV de entrada
+    with open(archivo_csv_entrada, newline='', encoding='utf-8') as csvfile:
+        lector_csv = csv.reader(csvfile)
+        # Iterar sobre cada fila del archivo CSV
+        for fila in lector_csv:
+            # Mejorar la redacción de la fila y agregarla a la lista de filas mejoradas
+            fila_mejorada = mejorar_redaccion(fila)
+            filas_mejoradas.append(fila_mejorada)
+
+    # Escribir las filas mejoradas en un nuevo archivo CSV
+    with open(archivo_csv_salida, mode='w', newline='', encoding='utf-8') as csvfile:
+        escritor_csv = csv.writer(csvfile)
+        for fila in filas_mejoradas:
+            escritor_csv.writerow(fila)
+
+# Verificar si este script es el archivo principal que se está ejecutando
+if __name__ == "__main__":
+    # Llamar a la función principal
+    main()
+
+`mejorar_redaccion`: Mejora la redacción de una fila del CSV ajustando el formato del concepto y la definición según ciertos criterios.
+
+Proceso:
+1. Abrir CSV de Entrada: Lee el archivo CSV `TextoExtraido/definiciones.csv`.
+2. Mejorar Redacción: Utiliza la función `mejorar_redaccion` para mejorar cada fila del CSV.
+3. Guardar Filas Mejoradas: Escribe las filas mejoradas en el archivo CSV `TextoExtraido/definiciones_mejoradas.csv`.
+
+Documentación de la clase BuscadorDeDefinción.py
+
+Esta clase maneja la lógica de búsqueda de definiciones en un archivo CSV.
+
+- `__init__`: 
+  - Verifica si el archivo CSV especificado existe. Si no existe, muestra un mensaje de error y levanta una excepción.
+  
+- `buscar_definicion`: 
+  - Recibe un término de búsqueda, lo normaliza y busca coincidencias en el archivo CSV.
+  - Utiliza la función `normalizar_texto` para asegurar que la comparación sea insensible a mayúsculas, minúsculas y caracteres especiales.
+  - Retorna la definición correspondiente si encuentra una coincidencia, de lo contrario, retorna un mensaje indicando que no se encontró la definición o que hubo un error.
+
+- `normalizar_texto`: 
+  - Método estático que normaliza el texto eliminando acentos y caracteres especiales, convirtiendo todo a minúsculas.
+
+`InterfazBuscador`
+
+Esta clase crea la interfaz gráfica usando tkinter para interactuar con el usuario.
+
+- `__init__`: 
+  - Recibe el `master` (ventana principal de tkinter) y la ruta al archivo CSV.
+  - Crea y posiciona los widgets de la interfaz: etiqueta (`Label`) para instrucciones, campo de entrada (`Entry`) para ingresar términos, botón (`Button`) para iniciar la búsqueda y etiqueta (`Label`) para mostrar el resultado.
+
+- `buscar_definicion`: 
+  - Obtiene el término ingresado por el usuario desde el campo de entrada.
+  - Llama al método `buscar_definicion` del objeto `DefinicionBuscador` para obtener la definición correspondiente.
+  - Actualiza la etiqueta de resultado con la definición encontrada o muestra un mensaje de advertencia si el campo está vacío.
+
+`centrar_ventana`
+
+- Esta función calcula la posición en la pantalla para centrar la ventana principal (`root`) en función del tamaño especificado (`ancho` y `alto`).
+
+(`__main__`)
+
+- Verifica que se haya proporcionado la ruta al archivo CSV como argumento al script.
+- Construye la ruta completa al archivo de definiciones mejoradas (`definiciones_mejoradas.csv`).
+- Crea una instancia de `tk.Tk()` para iniciar la ventana principal.
+- Centra la ventana en la pantalla utilizando la función `centrar_ventana`.
+- Crea una instancia de `InterfazBuscador` pasando la ventana principal y la ruta al archivo CSV.
+- Inicia el bucle principal de tkinter (`root.mainloop()`) para que la interfaz sea interactiva.
+
+Documentación de la clase AgregarPalabra.py
+
+Esta clase maneja la interfaz gráfica y la lógica para agregar palabras a un archivo.
+
+- `__init__`: 
+  - Constructor que recibe dos parámetros: `archivo` (ruta del archivo donde se agregarán las palabras) y `titulo` (título de la ventana).
+  - Llama al método `crear_ventana` para crear la interfaz gráfica.
+
+- `crear_ventana`: 
+  - Crea una nueva ventana (`Toplevel`) utilizando `tk.Toplevel()`.
+  - Establece el título de la ventana con el valor proporcionado en `titulo`.
+  - Calcula las dimensiones y posición de la ventana utilizando el método `centrar_ventana`.
+  - Crea un marco (`Frame`) dentro de la ventana para organizar los widgets.
+  - Agrega una etiqueta (`Label`) para instrucciones, un campo de entrada (`Entry`) para ingresar palabras, y dos botones (`Button`): uno para agregar la palabra y otro para cancelar y cerrar la ventana.
+
+- `agregar`: 
+  - Método llamado cuando se presiona el botón "Agregar".
+  - Obtiene la palabra ingresada desde el campo de entrada (`Entry`).
+  - Verifica si la palabra no está vacía. Si no está vacía, llama al método `agregar_palabra` para escribir la palabra en el archivo y muestra un mensaje de éxito utilizando `messagebox.showinfo`. Limpia el campo de entrada después de agregar la palabra.
+  - Si la palabra está vacía, muestra un mensaje de advertencia utilizando `messagebox.showwarning`.
+
+- `agregar_palabra`: 
+  - Método que abre el archivo especificado en modo de escritura (`'a'`) y escribe la palabra seguida de un salto de línea (`'\n'`).
+
+- `centrar_ventana`: 
+  - Método estático que calcula la posición de la ventana (`ventana`) en el centro de la pantalla usando las dimensiones especificadas (`ancho` y `alto`).
+
+(`__main__`)
+
+- Verifica que se haya proporcionado exactamente un argumento al script (la ruta del archivo donde se agregarán las palabras).
+- Crea una instancia de `tk.Tk()` para la ventana principal (no visible en este caso, ya que se usan `Toplevel`).
+- Crea una instancia de `AgregarPalabra`, pasando la ruta del archivo y un título para la ventana.
+- Inicia el bucle principal de tkinter (`root.mainloop()`) para mantener la interfaz activa.
