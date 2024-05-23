@@ -2,8 +2,7 @@ import csv
 import sys
 
 # Ajustar el límite del tamaño de campo del CSV al tamaño máximo permitido del sistema operativo
-max_size = 2147483647  # El máximo valor para un entero largo en C
-csv.field_size_limit(max_size)
+csv.field_size_limit(sys.maxsize)
 
 # Lista de palabras consideradas errores
 errores = ["en", "de", "la", "por", "vía"]

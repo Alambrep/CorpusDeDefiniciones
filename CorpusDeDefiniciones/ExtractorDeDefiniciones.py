@@ -1,8 +1,20 @@
 import spacy
 import pandas as pd
+import subprocess
+import sys
 
-# Cargar el modelo de lenguaje en español de Spacy
-nlp = spacy.load("es_core_news_sm")
+# Función para verificar si el modelo de spaCy está instalado y descargarlo si no lo está
+def verificar_o_instalar_modelo(modelo):
+    try:
+        nlp = spacy.load(modelo)
+    except OSError:
+        print(f"El modelo '{modelo}' no está instalado. Instalándolo ahora...")
+        subprocess.run([sys.executable, "-m", "spacy", "download", modelo])
+        nlp = spacy.load(modelo)
+    return nlp
+
+# Verificar e instalar el modelo de lenguaje en español de Spacy si es necesario
+nlp = verificar_o_instalar_modelo("es_core_news_sm")
 
 archivo_palabras = "contextos_definitorios.txt"
 archivo_descartes = "listado_descartes_corpus.txt"
